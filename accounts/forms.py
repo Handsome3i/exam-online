@@ -20,11 +20,11 @@ class RegisterForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'department']
-        labels = {'username': '用户名', 'first_name': '姓名', 'department': '部门/班级'}
+        labels = {'username': '用户名', 'first_name': '姓名', 'department': '供应商名称'}
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入用户名'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入真实姓名'}),
-            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入部门/班级'}),
+            'department': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '请输入供应商名称'}),
         }
 
     def clean(self):

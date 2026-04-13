@@ -95,7 +95,7 @@ def export_scores(request, exam_id):
     ws = wb.active
     ws.title = '成绩汇总'
 
-    headers = ['排名', '用户名', '姓名', '部门', '得分', '是否及格', '开始时间', '交卷时间']
+    headers = ['排名', '用户名', '姓名', '供应商', '得分', '是否及格', '开始时间', '交卷时间']
     ws.append(headers)
 
     from openpyxl.styles import Font, PatternFill, Alignment
