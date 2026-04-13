@@ -49,3 +49,28 @@ function initTimer(seconds, displayEl, formEl) {
     update();
     const timer = setInterval(update, 1000);
 }
+
+function validateAllAnswered() {
+    var cards = document.querySelectorAll('.question-card');
+    var unanswered = [];
+    cards.forEach(function(card) {
+        var inputs = card.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+        if (inputs.length === 0) return;
+        var answered = false;
+        inputs.forEach(function(inp) { if (inp.checked) answered = true; });
+        if (!answered) {
+            var num = card.querySelector('.question-number');
+            unanswered.push(num ? num.textContent.trim() : '?');
+            card.style.border = '2px solid var(--danger)';
+        } else {
+            card.style.border = '';
+        }
+    });
+    if (unanswered.length > 0) {
+        alert('以下题目尚未作答，请完成后再提交：\n第 ' + unanswered.join('、') + ' 题');
+        var first = document.querySelector('.question-card[style*="danger"]');
+        if (first) first.scrollIntoView({behavior: 'smooth', block: 'center'});
+        return false;
+    }
+    return confirm('确认交卷吗？提交后不可修改。');
+}

@@ -157,6 +157,24 @@ def exam_submit(request, exam_id):
         return redirect('exams:exam_result', exam_id=exam_id)
 
     questions = exam.questions.prefetch_related('options').all()
+
+    elapsed = (timezone.now() - record.started_at).total_seconds()
+    time_up = elapsed > exam.duration_minutes * 60 + 5
+
+    if not time_up:
+        unanswered = []
+        for q in questions:
+            key = f'question_{q.id}'
+            if q.question_type == 'multi':
+                ans = request.POST.getlist(key)
+            else:
+                ans = [request.POST.get(key)] if request.POST.get(key) else []
+            if not ans:
+                unanswered.append(str(q.order))
+        if unanswered:
+            messages.error(request, f'第 {"、".join(unanswered)} 题尚未作答，请完成后再提交')
+            return redirect('exams:exam_take', exam_id=exam_id)
+
     total_score = 0
     answers_data = {}
 

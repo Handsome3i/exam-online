@@ -14,7 +14,7 @@
         <div style="display:flex;align-items:center;gap:12px">
             <span style="font-size:13px;color:var(--text-muted)">剩余时间</span>
             <span class="timer-display" id="timer">--:--</span>
-            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('确认交卷吗？')">交卷</button>
+            <button type="submit" class="btn btn-primary btn-sm" onclick="return validateAllAnswered()">交卷</button>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
     {% endfor %}
 
     <div style="text-align:center;padding:20px">
-        <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('确认交卷吗？提交后不可修改。')">提交试卷</button>
+        <button type="submit" class="btn btn-primary btn-lg" onclick="return validateAllAnswered()">提交试卷</button>
     </div>
 </form>
 {% endblock %}
