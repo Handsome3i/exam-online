@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}创建试卷 - 在线考试系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>创建新试卷</h1>
+    <p>上传 Excel 考题文件，自动解析生成试卷</p>
+</div>
+
+<div class="card" style="max-width:640px">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label>{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                <div class="help-text">{{ field.help_text }}</div>
+                {% endif %}
+                {% for error in field.errors %}
+                <div class="help-text" style="color:var(--danger)">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+            <div style="margin-top:24px;display:flex;gap:8px">
+                <button type="submit" class="btn btn-primary">创建试卷</button>
+                <a href="{% url 'exams:exam_list' %}" class="btn btn-outline">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}考试结果 - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>考试结果</h1>
+    <p>{{ exam.title }}</p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card {% if record.passed %}success{% else %}danger{% endif %}">
+        <div class="stat-value">{{ record.total_score }}</div>
+        <div class="stat-label">我的得分（满分 {{ exam.total_score }}）</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{% if record.passed %}&#9989;{% else %}&#10060;{% endif %}</div>
+        <div class="stat-label">{% if record.passed %}及格（及格线 {{ exam.pass_score }} 分）{% else %}未及格（及格线 {{ exam.pass_score }} 分）{% endif %}</div>
+    </div>
+    <div class="stat-card info">
+        <div class="stat-value">
+            {% with correct_count=0 %}
+            {% for d in details %}{% if d.is_correct %}{{ forloop.counter }}{% endif %}{% endfor %}
+            {% endwith %}
+        </div>
+        <div class="stat-label">交卷时间：{{ record.submitted_at|date:"Y-m-d H:i:s" }}</div>
+    </div>
+</div>
+
+<h2 style="font-size:18px;margin-bottom:16px">答题详情</h2>
+
+{% for detail in details %}
+<div class="question-card">
+    <div class="question-header">
+        <span class="question-number">{{ detail.question.order }}</span>
+        <span class="question-type">{{ detail.question.get_question_type_display }}</span>
+        {% if detail.is_correct %}
+        <span class="badge badge-success">正确 +{{ detail.earned_score }}分</span>
+        {% else %}
+        <span class="badge badge-danger">错误 +0分</span>
+        {% endif %}
+        <span class="question-score">{{ detail.question.score }} 分</span>
+    </div>
+    <div class="question-content">{{ detail.question.content }}</div>
+    <ul class="option-list">
+        {% for opt in detail.question.get_options %}
+        <div class="option-item {% if opt.label in detail.selected_options and opt.is_correct %}correct{% elif opt.label in detail.selected_options and not opt.is_correct %}wrong{% elif opt.is_correct %}correct{% endif %}">
+            <label>
+                <strong>{{ opt.label }}.</strong> {{ opt.content }}
+                {% if opt.label in detail.selected_options %}
+                    <span class="badge {% if opt.is_correct %}badge-success{% else %}badge-danger{% endif %}" style="margin-left:6px">你的选择</span>
+                {% endif %}
+                {% if opt.is_correct %}
+                    <span class="badge badge-success" style="margin-left:4px">正确答案</span>
+                {% endif %}
+            </label>
+        </div>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+
+<div style="text-align:center;padding:20px">
+    <a href="{% url 'exams:exam_list' %}" class="btn btn-outline">返回考试列表</a>
+</div>
+{% endblock %}

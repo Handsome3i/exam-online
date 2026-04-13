@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ exam.title }} - 考试中{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'exams:exam_submit' exam.id %}" id="examForm">
+    {% csrf_token %}
+
+    <div class="timer-bar">
+        <div>
+            <strong>{{ exam.title }}</strong>
+            <span style="color:var(--text-muted);font-size:13px;margin-left:12px">共 {{ questions|length }} 题</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:13px;color:var(--text-muted)">剩余时间</span>
+            <span class="timer-display" id="timer">--:--</span>
+            <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('确认交卷吗？')">交卷</button>
+        </div>
+    </div>
+
+    {% for question in questions %}
+    <div class="question-card">
+        <div class="question-header">
+            <span class="question-number">{{ question.order }}</span>
+            <span class="question-type">{{ question.get_question_type_display }}</span>
+            <span class="question-score">{{ question.score }} 分</span>
+        </div>
+        <div class="question-content">{{ question.content }}</div>
+        <ul class="option-list">
+            {% for opt in question.get_options %}
+            <div class="option-item">
+                {% if question.question_type == 'multi' %}
+                <input type="checkbox" name="question_{{ question.id }}" value="{{ opt.label }}" id="opt_{{ opt.id }}">
+                {% else %}
+                <input type="radio" name="question_{{ question.id }}" value="{{ opt.label }}" id="opt_{{ opt.id }}">
+                {% endif %}
+                <label for="opt_{{ opt.id }}">
+                    <strong>{{ opt.label }}.</strong> {{ opt.content }}
+                </label>
+            </div>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+    <div style="text-align:center;padding:20px">
+        <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('确认交卷吗？提交后不可修改。')">提交试卷</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var timerEl = document.getElementById('timer');
+    var form = document.getElementById('examForm');
+    initTimer({{ remaining_seconds }}, timerEl, form);
+});
+</script>
+{% endblock %}

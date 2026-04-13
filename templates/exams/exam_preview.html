@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}预览试卷 - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>试卷预览：{{ exam.title }}</h1>
+    <p>共 {{ questions|length }} 题，满分 {{ exam.total_score }} 分</p>
+</div>
+
+{% for question in questions %}
+<div class="question-card">
+    <div class="question-header">
+        <span class="question-number">{{ question.order }}</span>
+        <span class="question-type">{{ question.get_question_type_display }}</span>
+        <span class="question-score">{{ question.score }} 分</span>
+    </div>
+    <div class="question-content">{{ question.content }}</div>
+    <ul class="option-list">
+        {% for opt in question.get_options %}
+        <div class="option-item {% if opt.is_correct %}correct{% endif %}">
+            <label>
+                <strong>{{ opt.label }}.</strong> {{ opt.content }}
+                {% if opt.is_correct %}<span class="badge badge-success" style="margin-left:8px">正确答案</span>{% endif %}
+            </label>
+        </div>
+        {% endfor %}
+    </ul>
+</div>
+{% endfor %}
+
+<div style="margin-top:20px">
+    <a href="{% url 'exams:exam_list' %}" class="btn btn-outline">返回列表</a>
+</div>
+{% endblock %}

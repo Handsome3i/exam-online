@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}考试列表 - 在线考试系统{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% if user.is_admin %}试卷管理{% else %}可用考试{% endif %}</h1>
+    <p>{% if user.is_admin %}管理所有试卷，上传、编辑、发布{% else %}选择一场考试开始作答{% endif %}</p>
+</div>
+
+{% if user.is_admin %}
+<div style="margin-bottom:20px;">
+    <a href="{% url 'exams:exam_create' %}" class="btn btn-primary">+ 创建新试卷</a>
+</div>
+{% endif %}
+
+<div class="exam-grid">
+    {% for item in exam_data %}
+    <div class="exam-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <h3>{{ item.exam.title }}</h3>
+            {% if user.is_admin %}
+                {% if item.exam.is_published %}
+                <span class="badge badge-success">已发布</span>
+                {% else %}
+                <span class="badge badge-warning">未发布</span>
+                {% endif %}
+            {% endif %}
+        </div>
+        <div class="exam-meta">
+            {% if item.exam.description %}<div style="margin-bottom:6px">{{ item.exam.description }}</div>{% endif %}
+            <span>&#128221; {{ item.exam.question_count }} 题</span>
+            <span>&#9201; {{ item.exam.duration_minutes }} 分钟</span>
+            <span>&#127942; 满分 {{ item.exam.total_score }}</span>
+            <span>及格 {{ item.exam.pass_score }} 分</span>
+        </div>
+        <div class="exam-actions">
+            {% if user.is_admin %}
+                <a href="{% url 'exams:exam_preview' item.exam.id %}" class="btn btn-outline btn-sm">预览</a>
+                <a href="{% url 'exams:exam_edit' item.exam.id %}" class="btn btn-outline btn-sm">编辑</a>
+                <form method="post" action="{% url 'exams:exam_publish' item.exam.id %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if item.exam.is_published %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if item.exam.is_published %}取消发布{% else %}发布{% endif %}
+                    </button>
+                </form>
+                <form method="post" action="{% url 'exams:exam_delete' item.exam.id %}" style="display:inline" onsubmit="return confirm('确定要删除该试卷吗？')">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                </form>
+            {% else %}
+                {% if item.record %}
+                    {% if item.record.is_submitted %}
+                        <span class="badge badge-success">已完成</span>
+                        <span style="font-size:14px;font-weight:600;color:var(--primary)">得分: {{ item.record.total_score }}</span>
+                        <a href="{% url 'exams:exam_result' item.exam.id %}" class="btn btn-outline btn-sm">查看结果</a>
+                    {% else %}
+                        <a href="{% url 'exams:exam_take' item.exam.id %}" class="btn btn-primary btn-sm">继续考试</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'exams:exam_start' item.exam.id %}" class="btn btn-primary btn-sm">开始考试</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted)">
+        <p style="font-size:48px;margin-bottom:8px">&#128196;</p>
+        <p>{% if user.is_admin %}还没有创建试卷{% else %}暂无可用考试{% endif %}</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

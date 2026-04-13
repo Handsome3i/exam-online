@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}在线考试系统{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block body %}
+<div class="layout">
+    <nav class="sidebar">
+        <a href="/" class="sidebar-brand">&#128218; 在线考试系统</a>
+        <div class="sidebar-nav">
+            <a href="{% url 'exams:exam_list' %}" class="{% if request.resolver_match.app_name == 'exams' %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                考试列表
+            </a>
+            {% if user.is_admin %}
+            <a href="{% url 'exams:exam_create' %}" {% if request.resolver_match.url_name == 'exam_create' %}class="active"{% endif %}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16m8-8H4"/></svg>
+                创建试卷
+            </a>
+            <a href="{% url 'dashboard:home' %}" class="{% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                数据看板
+            </a>
+            <a href="{% url 'accounts:user_manage' %}" {% if request.resolver_match.url_name == 'user_manage' %}class="active"{% endif %}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                用户管理
+            </a>
+            {% endif %}
+        </div>
+        <div class="sidebar-user">
+            <div class="user-name">{{ user.first_name|default:user.username }}</div>
+            <div class="user-role">{{ user.get_role_display }}</div>
+            <a href="{% url 'accounts:logout' %}" style="color:#94a3b8;font-size:12px;text-decoration:none;margin-top:4px;display:inline-block;">退出登录</a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

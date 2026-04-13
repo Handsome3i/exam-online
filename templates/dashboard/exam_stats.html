@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}统计详情 - {{ exam.title }}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ exam.title }} - 数据统计</h1>
+    <p>
+        <a href="{% url 'dashboard:home' %}" style="color:var(--primary);text-decoration:none">&larr; 返回看板</a>
+        &nbsp;&nbsp;
+        <a href="{% url 'dashboard:export_scores' exam.id %}" class="btn btn-success btn-sm">导出成绩Excel</a>
+    </p>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_count }}</div>
+        <div class="stat-label">参考人数</div>
+    </div>
+    <div class="stat-card info">
+        <div class="stat-value">{{ stats.avg_score|floatformat:1|default:"--" }}</div>
+        <div class="stat-label">平均分</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-value">{{ stats.max_score|default:"--" }}</div>
+        <div class="stat-label">最高分</div>
+    </div>
+    <div class="stat-card danger">
+        <div class="stat-value">{{ stats.min_score|default:"--" }}</div>
+        <div class="stat-label">最低分</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.pass_rate }}%</div>
+        <div class="stat-label">及格率（{{ stats.pass_count }}人及格）</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+    <div class="card">
+        <div class="card-header">分数段分布</div>
+        <div class="card-body">
+            <canvas id="scoreChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">及格率</div>
+        <div class="card-body">
+            <canvas id="passChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:24px">
+    <div class="card-header">各题正确率</div>
+    <div class="card-body">
+        <canvas id="questionChart" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">成绩明细</div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>用户名</th>
+                        <th>姓名</th>
+                        <th>部门</th>
+                        <th>得分</th>
+                        <th>是否及格</th>
+                        <th>交卷时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ record.user.username }}</td>
+                        <td>{{ record.user.first_name|default:record.user.username }}</td>
+                        <td>{{ record.user.department|default:'-' }}</td>
+                        <td><strong>{{ record.total_score }}</strong></td>
+                        <td>
+                            {% if record.total_score >= exam.pass_score %}
+                            <span class="badge badge-success">及格</span>
+                            {% else %}
+                            <span class="badge badge-danger">不及格</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ record.submitted_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const scoreLabels = [{% for s in score_distribution %}'{{ s.label }}',{% endfor %}];
+const scoreCounts = [{% for s in score_distribution %}{{ s.count }},{% endfor %}];
+
+new Chart(document.getElementById('scoreChart'), {
+    type: 'bar',
+    data: {
+        labels: scoreLabels,
+        datasets: [{
+            label: '人数',
+            data: scoreCounts,
+            backgroundColor: ['#4361ee', '#3a86ff', '#48bfe3', '#06d6a0', '#ef476f'],
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+});
+
+new Chart(document.getElementById('passChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['及格', '不及格'],
+        datasets: [{
+            data: [{{ stats.pass_count }}, {{ stats.fail_count }}],
+            backgroundColor: ['#06d6a0', '#ef476f'],
+        }]
+    },
+    options: { responsive: true }
+});
+
+const qLabels = [{% for q in question_stats %}'第{{ q.question.order }}题',{% endfor %}];
+const qRates = [{% for q in question_stats %}{{ q.correct_rate }},{% endfor %}];
+
+new Chart(document.getElementById('questionChart'), {
+    type: 'bar',
+    data: {
+        labels: qLabels,
+        datasets: [{
+            label: '正确率(%)',
+            data: qRates,
+            backgroundColor: qRates.map(r => r >= 60 ? '#06d6a0' : '#ef476f'),
+            borderRadius: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100 } }
+    }
+});
+</script>
+{% endblock %}

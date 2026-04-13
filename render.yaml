@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: exam-online
+    env: python
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput"
+    startCommand: "python manage.py migrate && python manage.py init_admin && gunicorn exam_online.wsgi"
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: exam_online.settings_prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
